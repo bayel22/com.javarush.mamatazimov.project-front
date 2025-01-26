@@ -4,8 +4,92 @@
     <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
     <link href="/css/my.css" rel="stylesheet">
 </head>
-<body>
-<h1>RPG admin panel</h1>
+<body onload="getPlayersList(); getTheTotalNumberOfAccounts()" >
+    <h1>RPG admin panel</h1>
+
+    <h2>Accounts list:</h2>
+
+    <label for="countPerPage">Count per page:</label>
+    <select id="countPerPage" onchange="getPlayersList()">
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+    </select>
+    <table id="Table_1">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Title</th>
+                <th>Race</th>
+                <th>Profession</th>
+                <th>Level</th>
+                <th>Birthday</th>
+                <th>Banned</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+
+    <div id="pagingButtons">
+        Pages:
+    </div>
+
+    <script>
+        function getPlayersList() {
+
+            $("tr:has(td)").remove();
+
+            console.log("Heloooooooo")
+            $.get("rest/players", (response) => {
+                $.each(response, (index, item) => {
+                    $("<tr>").html("<td>"
+                        + item.id + "</td><td>"
+                        + item.name + "</td><td>"
+                        + item.title + "</td><td>"
+                        + item.race + "</td><td>"
+                        + item.profession + "</td><td>"
+                        + item.level + "</td><td>"
+                        + new Date(item.birthday).toLocaleDateString() + "</td><td>"
+                        + item.banned + "</td>"
+                    ).appendTo("#Table_1 tbody")
+                });
+            })
+
+            let countPerPage = $("countPerPage").val();
+            if (countPerPage == null) {
+                countPerPage= 3
+            }
+
+            let countPages = Math.ceil(getTheTotalNumberOfAccounts() / countPerPage)
+
+            $("button.button-styled").remove();
+
+            for (let i = 1; i <= countPages; i++) {
+                let button = "<button>" + i + "</button>"
+                let btn = $(button)
+                    .attr("id", "pagingButton" + i)
+                    .attr("onclick", "getPlayersList()")
+                    .addClass("button-styled");
+                $("#pagingButtons").append(btn);
+            }
+
+        }
+
+        function getTheTotalNumberOfAccounts() {
+            let count = 0;
+            $.ajax({
+                url:"rest/players/count",
+                async:false,
+                success:function (result) {
+                    count = result
+                }
+            })
+            return count
+        }
+    </script>
 
 </body>
 </html>
